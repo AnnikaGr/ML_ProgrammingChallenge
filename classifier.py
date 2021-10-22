@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 
+#TODO ausreiser in reihe 843, und irgendwo im letzten Label
+
 """Fetches training data
 
     Parameters:
@@ -39,9 +41,10 @@ def fetch_dataset(path, details=False):
         print (df)
 
     data = df.to_numpy()
-    #TODO construct testing and training vectors
+
     y=data[:,1]
     X=data[:,2:15]
+
     return X,y
 
 """ Train-Test split
@@ -49,10 +52,11 @@ def fetch_dataset(path, details=False):
     Parameters:
     Y: labels
     X: features
-    ratio: ratio of training and testing data
+    pcSplit: ratio of training and testing data
+    seed: inhibit randomness
 
     Returns:
-    np arrays containing training and testing data
+    
 
 """
 # Splits data into training and test set, pcSplit defines the percent of
@@ -90,15 +94,28 @@ def testClassifier(classifier, dim=0, split=0.7, ntrials=100, plot = False):
 
     X,y = fetch_dataset("data/TrainOnMe-2.csv", details=False) ##TODO ,pcadim
 
+    X= preProc(X)
+
     pcadim=0
 
-    means = np.zeros(ntrials,);
+    means = np.zeros(ntrials,)
 
     for trial in range(ntrials):
 
         #print("TRIAL", trial)
 
         xTr,yTr,xTe,yTe,trIdx,teIdx = trteSplitEven(X,y,split,trial)
+
+        # replace nan values with mean
+        tr_col_mean=np.nanmean(xTr, axis=0)
+        ids= np.where(np.isnan(xTr))
+        if (len(ids)!=0):
+            xTr[ids] = np.take(tr_col_mean, ids[1])
+
+        te_col_mean=np.nanmean(xTe, axis=0)
+        ids= np.where(np.isnan(xTe))
+        if(len(ids)!=0):
+            xTe[ids]= np.take(te_col_mean, ids[1])
 
         # Do PCA replace default value if user provides it
         if dim > 0:
@@ -135,6 +152,32 @@ def plotAccuracy(means):
     plt.ylim(50, 100)
     plt.show()
 
+""" Preproc String data in feature matrix
+
+    Parameters:
+    X: feature matrix
+
+    Returns:
+    feature matrix with strings substituted by unique integers
+
+"""
+def preProc(X):
+
+    #TODO handle outlier
+    #TODO handle nan
+
+    unique_vals=np.unique(X[:,6])
+    #TODO deal with it that it should always be the same, its categorical data! (int bilded das mit intervallskala falsch ab?)
+    for idx,val in enumerate (unique_vals):
+        jdx= np.where(X[:,6]==val)[0]
+        X[jdx,6]=idx
+
+    unique_vals=np.unique(X[:,11])
+    for idx,val in enumerate (unique_vals):
+        jdx= np.where(X[:,11]==val)[0]
+        X[jdx,11]=idx
+    X = X.astype('float64')
+    return X
 
 # try out different base classifiers
 class DecisionTreeClassifier(object):
