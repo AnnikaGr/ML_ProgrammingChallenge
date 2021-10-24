@@ -12,9 +12,12 @@ from sklearn.model_selection import train_test_split
 import seaborn as sns
 sns.set()
 
-#TODO ausreiser in reihe 843, und irgendwo im letzten Label
+# TODO handle outliers, ausreiser in reihe 843, und irgendwo im letzten Label
 # TODO scale data
-# TODO deal with categorical data
+# TODO deal with categorical data differently, research names connections
+# TODO research on classifiying mixed data
+#TODO AUC
+# TODO check overfitting/hyperparametersearch
 
 #TODO DO NOT FORGET TO PREPROC EVALUATION SET!!!!!, preProc df and preProc Matrix
 
@@ -51,6 +54,8 @@ def fetch_dataset(path, details=False):
         print (df)
 
     df= preProcDf(df)
+
+
 
     data = df.to_numpy()
 
@@ -179,20 +184,14 @@ def preProcDf(df):
     #handle categorical data
     x7_dummy= pd.get_dummies(df['x7'])
     x12_dummy= pd.get_dummies(df['x12'])
+    x12_dummy.describe()
+    x12_dummy.columns = ['False','True']
+    x7_dummy.describe()
+    x7_dummy.columns = ['name1','name2', 'name3', 'name4', 'name5']
     df=pd.concat((df,x7_dummy,x12_dummy), axis=1)
     df=df.drop(['x7', 'x12'], axis=1)
-
-    # unique_vals=np.unique(X[:,6])
-
-    # for idx,val in enumerate (unique_vals):
-    #     jdx= np.where(X[:,6]==val)[0]
-    #     X[jdx,6]=idx
-    #
-    # unique_vals=np.unique(X[:,11])
-    # for idx,val in enumerate (unique_vals):
-    #     jdx= np.where(X[:,11]==val)[0]
-    #     X[jdx,11]=idx
-    #
+    df=df.drop(['False'], axis=1)
+    df=df.drop(['name5'], axis=1)
 
     return df
 
@@ -353,8 +352,8 @@ class SVMDefClassifier(object):
 scores=[]
 
 #scores.append(testClassifier(DecisionTreeClassifier(),split=0.7, plot=True))
-scores.append(testClassifier(RandomForestClassifier(),split=0.7, plot=True))
-#scores.append(testClassifier(GradientBoostingClassifier(),split=0.7, plot=True))
+#scores.append(testClassifier(RandomForestClassifier(),split=0.7, plot=True))
+scores.append(testClassifier(GradientBoostingClassifier(),split=0.7, plot=True))
 
 #scores.append(testClassifier(NaiveBayesClassifier(),split=0.7, plot=True))
 #scores.append(testClassifier(KNeiClassifier(),split=0.7, plot=True))
