@@ -432,9 +432,6 @@ def preProcDf(df):
     return df, x7_enc, x12_enc
 
 def preProcNp(X):
-    #TODO handle outlier here! RobustScaler? Why is mean wit
-
-    #TODO next line also needed for evaluation data?
     #print("Before: "+ str(X.mean(axis=0)))
     X = X.astype('float64')
     # transformer = StandardScaler() #RobustScaler()
@@ -494,7 +491,7 @@ class RandomForestClassifier(object):
     def trainClassifier(self, Xtr, yTr, W=None):
         rtn = RandomForestClassifier()
 
-        rtn.classifier =ensemble.RandomForestClassifier(n_estimators=1000, max_depth=Xtr.shape[1]/2+1, max_features=0.5, class_weight='balanced_subsample')
+        rtn.classifier =ensemble.RandomForestClassifier(n_estimators=1000, max_depth=Xtr.shape[1]/2+1, max_features=0.5, class_weight='balanced')
 
         if W is None:
             rtn.classifier.fit(Xtr, yTr)
