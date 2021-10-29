@@ -374,7 +374,7 @@ def testClassifier(classifier, dim=0, train_size=0.7, ntrials=100, plot = False)
         # print('Shoogee: '+ str(len(np.where(yTr=='Shoogee')[0])))
         # print('Bob: '+ str(len(np.where(yTr=='Bob')[0])))
 
-        #classifier.searchHyperparameters(xTr, xTe, yTr, yTe)
+        #classifier.searchHyperparameters(xTr, yTr)
 
         dic={'Atsuto':150}
         #cat_mask=[False, False,False,False,False, False, False,False,False,False, False, True,True,True,True,True]
@@ -448,12 +448,12 @@ class RandomForestClassifier(object):
     def __init__(self):
         self.trained = False
 
-    def searchHyperparameters(self, XTr, xTe, yTr, yTe):
+    def searchHyperparameters(self, XTr, yTr):
         rtn = RandomForestClassifier()
 
         model = Pipeline([
-            ('sampling', RandomOverSampler()),
-            ('classification', ensemble.RandomForestClassifier())
+            #('sampling', RandomOverSampler()),
+            ('classification', ensemble.RandomForestClassifier(class_weight='balanced', n_estimators=1000))
         ])
 
         #forest =ensemble.RandomForestClassifier(n_estimators=400, max_depth=50)
@@ -461,7 +461,7 @@ class RandomForestClassifier(object):
             # 'classification__n_estimators': [1000],
             'classification__max_depth': [None,6,15,30,200],
             'classification__min_samples_split': [2,20,50,200],
-            # 'classification__max_leaf_nodes': [None, 5, 20,100],
+            'classification__max_leaf_nodes': [None, 5, 20,100],
             'classification__min_samples_leaf': [1, 20,50,100],
             'classification__max_samples': [None, 0.2, 0.5, 0.7],
             'classification__max_features': [None, 'sqrt', 0.5, 0.6, 0.7 ,0.8,0.9]
@@ -483,15 +483,15 @@ class RandomForestClassifier(object):
         for mean, std, params in zip(means, stds, clf.cv_results_['params']):
             print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
 
-        print("Best estimator and their score: ")
-        print(clf.best_estimator_)
-        print(clf.score(xTe, yTe))
+        # print("Best estimator and their score: ")
+        # print(clf.best_estimator_)
+        # print(clf.score(xTe, yTe))
 
 
     def trainClassifier(self, Xtr, yTr, W=None):
         rtn = RandomForestClassifier()
 
-        rtn.classifier =ensemble.RandomForestClassifier(n_estimators=1000, max_depth=Xtr.shape[1]/2+1, max_features=0.5, class_weight='balanced')
+        rtn.classifier =ensemble.RandomForestClassifier(n_estimators=1000, max_depth=Xtr.shape[1]/2+1 ,max_features=0.5, class_weight='balanced') # , min_samples_split= 2, max_samples= 0.7, max_leaf_nodes= 100
 
         if W is None:
             rtn.classifier.fit(Xtr, yTr)
@@ -530,7 +530,7 @@ def evaluateData(classifier):
 #evaluateData(RandomForestClassifier())
 testClassifier(RandomForestClassifier(),train_size=0.7, plot=False, ntrials=100)
 #testClassifier(QuadraticDiscriminantAna(),train_size=0.7, plot=False, ntrials=100)
-
+#testClassifier(RandomForestClassifier(), train_size=1.0, plot=False, ntrials=1)
 
 
 
